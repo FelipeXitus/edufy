@@ -45,6 +45,8 @@ export class KyselyUserRepository
         biography: user.biography,
         interests: JSON.stringify(user.interests ?? []),
         profilePictureUrl: user.profilePictureUrl,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       })
       .onConflict((oc) =>
         oc.column('id').doUpdateSet({

@@ -45,6 +45,8 @@ export class KyselyPurchaseRepository
         status: purchase.status,
         price: purchase.price,
         createdAt: purchase.purchaseDate,
+        updatedAt: new Date(),
+        confirmedAt: purchase.confirmedAt ?? null,
       })
       .onConflict((oc) =>
         oc.column('id').doUpdateSet({

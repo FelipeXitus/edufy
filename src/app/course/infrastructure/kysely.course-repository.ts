@@ -52,6 +52,8 @@ export class KyselyCourseRepository
         description: course.description,
         price: course.price,
         instructorId: course.instructorId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       })
       .onConflict((oc) =>
         oc.column('id').doUpdateSet({

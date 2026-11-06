@@ -20,6 +20,8 @@ export class KyselyTicketRepository
         createdBy: ticket.createdBy,
         resolvedBy: ticket.resolvedBy,
         replies: JSON.stringify(ticket.replies ?? []),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       })
       .onConflict((oc) =>
         oc.column('id').doUpdateSet({
