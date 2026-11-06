@@ -3,7 +3,7 @@ import webhookConfig, {
   WebhookConfig,
 } from '@src/libs/configuration/webhook.config';
 import { Jwt } from '@src/libs/jwt/jwt';
-import * as supertest from 'supertest';
+import supertest from 'supertest';
 
 export abstract class AbstractDSL {
   constructor(
