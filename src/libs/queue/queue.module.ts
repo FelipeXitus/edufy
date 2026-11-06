@@ -1,4 +1,4 @@
-import * as assert from 'node:assert';
+import assert from 'node:assert';
 import {
   DynamicModule,
   Inject,
@@ -15,7 +15,8 @@ import {
   MetadataScanner,
   ModuleRef,
 } from '@nestjs/core';
-import * as PgBoss from 'pg-boss';
+import { PgBoss } from 'pg-boss';
+import type { Queue as PgBossQueueOptions } from 'pg-boss';
 import { QueueModuleOptions } from './queue-module-options';
 import {
   ASYNC_OPTIONS_TYPE,
@@ -37,7 +38,7 @@ export class QueueModule
   extends ConfigurableModuleClass
   implements OnModuleInit, OnModuleDestroy
 {
-  private static readonly queues: Map<string, PgBoss.Queue> = new Map();
+  private static readonly queues: Map<string, PgBossQueueOptions> = new Map();
   private readonly logger = new Logger(QueueModule.name);
   constructor(
     @Inject(PG_BOSS_INSTANCE)
@@ -223,7 +224,7 @@ export class QueueModule
 
   static registerQueue(
     queueName: string,
-    options?: PgBoss.Queue,
+    options?: PgBossQueueOptions,
   ): DynamicModule {
     const queueProvider: Provider = {
       provide: getQueueToken(queueName),

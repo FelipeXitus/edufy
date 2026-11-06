@@ -24,14 +24,14 @@ import { CreateTicketDto } from './dto/create-ticket.dto';
 import { ReplyTicketDto } from './dto/reply-ticket.dto';
 import { TicketReadDto } from './dto/ticket.read-dto';
 
-@Controller('tickets')
+@Controller('')
 export class TicketController {
   constructor(
     @Inject(TicketRepository)
     private readonly ticketRepository: ITicketRepository,
   ) {}
 
-  @Get(':id')
+  @Get('tickets/:id')
   async getTicketById(
     @Param('id', parseUUIDWithMessage('Invalid ticket ID format'))
     id: string,
@@ -43,7 +43,7 @@ export class TicketController {
     return new TicketReadDto(ticket);
   }
 
-  @Post('/')
+  @Post('tickets')
   async create(
     @Body() ticket: CreateTicketDto,
     @CurrentUser() user: UserEntity,
@@ -106,5 +106,13 @@ export class TicketController {
     ticket.resolvedBy = user.id;
     await this.ticketRepository.save(ticket);
     return new TicketReadDto(ticket);
+  }
+
+  @Get('users/me/tickets')
+  async getMyTickets(@CurrentUser() user: UserEntity) {
+    const userTickets = await this.ticketRepository.findAllCreatedByUser(
+      user.id,
+    );
+    return userTickets.map((ticket) => new TicketReadDto(ticket));
   }
 }

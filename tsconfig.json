@@ -9,7 +9,6 @@
     "target": "ES2022",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
@@ -19,8 +18,8 @@
     "noFallthroughCasesInSwitch": false,
     "strict": true,
     "paths": {
-      "@src/*": ["src/*"],
-      "@test/*": ["test/*"]
+      "@src/*": ["./src/*"],
+      "@test/*": ["./test/*"]
     }
   }
 }

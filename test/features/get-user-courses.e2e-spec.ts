@@ -4,6 +4,7 @@ import { DSL, createDSL } from '@test/dsl/dsl.factory';
 import { workflows } from '@test/dsl/workflows';
 import { response } from '@test/utils/response';
 import { createTestingApp } from '@test/utils/testing-app.factory';
+import { describe, test, beforeAll, afterAll, expect } from '@jest/globals';
 
 describe('Get User Courses (e2e)', () => {
   let app: INestApplication;

@@ -2,9 +2,10 @@ import { DomainEvent } from '@src/libs/event/domain-event';
 import { UUID } from 'node:crypto';
 import z from 'zod/v4';
 
-export class PurchaseConfirmedEvent
-  implements DomainEvent<'purchase.confirmed', { id: string }>
-{
+export class PurchaseConfirmedEvent implements DomainEvent<
+  'purchase.confirmed',
+  { id: string }
+> {
   type = 'purchase.confirmed' as const;
   data: { id: UUID };
   timestamp: string;

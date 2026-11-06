@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import PgBoss from 'pg-boss';
+import { PgBoss, SendOptions, JobWithMetadata, ScheduleOptions } from 'pg-boss';
 
 import { Queue } from './queue.interface';
 
@@ -13,7 +13,7 @@ export class PgBossQueue implements Queue {
 
   async addJob(
     data: object,
-    options: PgBoss.SendOptions = {},
+    options: SendOptions = {},
   ): Promise<string | null> {
     const id = await this.boss.send(this.name, data, options);
     this.logger.debug('Job added with ID:', id);
@@ -30,26 +30,27 @@ export class PgBossQueue implements Queue {
     await this.boss.cancel(this.name, jobId);
   }
 
-  async getJobById(jobId: string): Promise<PgBoss.JobWithMetadata | null> {
+  async getJobById(jobId: string): Promise<JobWithMetadata | null> {
     return await this.boss.getJobById(this.name, jobId);
   }
 
   async getPendingJobsCount(): Promise<number> {
-    return this.boss.getQueueSize(this.name);
+    const [stats] = await this.boss.getQueueStats(this.name, { limit: 1 });
+    return stats?.readyCount ?? 0;
   }
 
   async resumeJob(jobId: string): Promise<void> {
-    return this.boss.resume(this.name, jobId);
+    await this.boss.resume(this.name, jobId);
   }
 
   purge(): Promise<void> {
-    return this.boss.purgeQueue(this.name);
+    return this.boss.deleteAllJobs(this.name).then(() => undefined);
   }
 
   async scheduleJob(
     cronExpression: string,
     data?: object,
-    options?: PgBoss.ScheduleOptions,
+    options?: ScheduleOptions,
   ): Promise<void> {
     this.logger.debug(`Scheduling job with cron expression: ${cronExpression}`);
     await this.boss.schedule(this.name, cronExpression, data, options);

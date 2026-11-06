@@ -1,7 +1,7 @@
-import type PgBoss from 'pg-boss';
+import type { WipData } from 'pg-boss';
 
 export interface OnQueueWipEventHandler {
-  onWip(workers: PgBoss.Worker[]): Promise<void> | void;
+  onWip(workers: WipData[]): Promise<void> | void;
 }
 export interface OnQueueErrorEventHandler {
   onError(error: Error): Promise<void>;
@@ -9,13 +9,5 @@ export interface OnQueueErrorEventHandler {
 export interface OnQueueStopEventHandler {
   onStop(): Promise<void>;
 }
-export interface OnQueueMonitorStatesEventHandler {
-  onMonitorStates(states: PgBoss.MonitorState[]): Promise<void>;
-}
 
-export type QueueEvent =
-  | 'error'
-  | 'wip'
-  | 'stopped'
-  | 'monitor-states'
-  | 'maintenance';
+export type QueueEvent = 'error' | 'wip' | 'stopped' | 'maintenance';
