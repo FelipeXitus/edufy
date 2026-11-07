@@ -9,7 +9,8 @@ export interface SendEmailInput {
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  public async send(input: SendEmailInput) {
+
+  async send(input: SendEmailInput): Promise<void> {
     this.logger.debug(
       `Enviando email para ${input.to} com assunto: ${input.subject}`,
     );

@@ -1,4 +1,6 @@
 import { INestApplication } from '@nestjs/common';
+import { jest } from '@jest/globals';
+import { EmailService } from '@src/libs/email/email.service';
 import { type Jwt } from '@src/libs/jwt/jwt';
 import { DSL, createDSL } from '@test/dsl/dsl.factory';
 import { workflows } from '@test/dsl/workflows';
@@ -15,6 +17,10 @@ describe('Resolve Ticket (e2e)', () => {
     app = await createTestingApp();
     dsl = createDSL(app);
     supportAgentJwt = await workflows(dsl).createUserWithRole('support_agent');
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   afterAll(async () => {
@@ -45,6 +51,37 @@ describe('Resolve Ticket (e2e)', () => {
           replies: [],
         });
     });
+
+    test('sends an email to the ticket creator after resolving the ticket', async () => {
+      const emailService = app.get(EmailService);
+
+      const sendEmailSpy = jest
+        .spyOn(emailService, 'send')
+        .mockResolvedValue(undefined);
+
+      const ticket = await dsl.tickets
+        .authenticatedAs(supportAgentJwt)
+        .create({
+          title: 'Test Ticket Email',
+          description: 'This ticket validates the resolved email',
+        })
+        .then((response) => response.body);
+
+      await dsl.tickets
+        .authenticatedAs(supportAgentJwt)
+        .resolve(ticket.id)
+        .expect(200);
+
+      expect(sendEmailSpy).toHaveBeenCalledTimes(1);
+
+      expect(sendEmailSpy).toHaveBeenCalledWith({
+        to: expect.any(String),
+        subject: `Ticket Resolvido: ${ticket.title}`,
+        body:
+          `O ticket "${ticket.title}" foi resolvido com sucesso por ` +
+          `${supportAgentJwt.payload().sub}.`,
+      });
+    });
   });
 
   describe('error cases', () => {
@@ -56,6 +93,7 @@ describe('Resolve Ticket (e2e)', () => {
           response.unauthorized('Authorization header is missing or malformed'),
         );
     });
+
     test('returns an error when ticket ID is invalid', () => {
       return dsl.tickets
         .authenticatedAs(supportAgentJwt)
@@ -63,8 +101,10 @@ describe('Resolve Ticket (e2e)', () => {
         .expect(400)
         .expect(response.badRequest('Invalid ticket ID format'));
     });
+
     test('returns an error when ticket is not found', async () => {
       const randomTicketId = randomUUID();
+
       return dsl.tickets
         .authenticatedAs(supportAgentJwt)
         .resolve(randomTicketId)
@@ -75,6 +115,7 @@ describe('Resolve Ticket (e2e)', () => {
           message: `Ticket with ID ${randomTicketId} not found`,
         });
     });
+
     test('returns an error when trying to resolve a ticket that is not open', async () => {
       const ticket = await dsl.tickets
         .authenticatedAs(supportAgentJwt)
@@ -99,6 +140,7 @@ describe('Resolve Ticket (e2e)', () => {
           ),
         );
     });
+
     test('returns an error when the user does not have permission to resolve the ticket', async () => {
       const commonUserJwt = await dsl.users.createRandomUser();
 

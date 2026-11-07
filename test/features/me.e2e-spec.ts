@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { DSL, createDSL } from '../dsl/dsl.factory';
 import { response } from '@test/utils/response';
 import { createTestingApp } from '@test/utils/testing-app.factory';
+import { workflows } from '@test/dsl/workflows';
 
 describe('Me (e2e)', () => {
   let app: INestApplication;
@@ -40,6 +41,53 @@ describe('Me (e2e)', () => {
             biography: null,
             interests: [],
             profilePictureUrl: null,
+          });
+        });
+    });
+
+    test('returns no tickets resolved for a support agent with no resolved tickets', async () => {
+      const jwtAccessToken =
+        await workflows(dsl).createUserWithRole('support_agent');
+
+      await dsl.users
+        .authenticatedAs(jwtAccessToken)
+        .me()
+        .expect(200)
+        .then((response) => {
+          expect(response.body).toMatchObject({
+            resolvedTickets: 0,
+          });
+        });
+    });
+
+    test('returns tickets resolved for a support agent with 1 or more resolved ticket', async () => {
+      const jwtAccessTokenUser =
+        await workflows(dsl).createUserWithRole('student');
+
+      const ticketOpenedByUser = await dsl.tickets
+        .authenticatedAs(jwtAccessTokenUser)
+        .create({
+          title: 'Test Ticket',
+          description: 'This is a test ticket',
+        })
+        .expect(201)
+        .then((response) => response.body.id);
+
+      const jwtAccessTokenAgent =
+        await workflows(dsl).createUserWithRole('support_agent');
+
+      await dsl.tickets
+        .authenticatedAs(jwtAccessTokenAgent)
+        .resolve(ticketOpenedByUser)
+        .expect(200);
+
+      await dsl.users
+        .authenticatedAs(jwtAccessTokenAgent)
+        .me()
+        .expect(200)
+        .then((response) => {
+          expect(response.body).toMatchObject({
+            resolvedTickets: 1,
           });
         });
     });
