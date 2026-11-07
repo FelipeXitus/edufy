@@ -58,7 +58,7 @@ export class TicketController {
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Post(':id/reply')
+  @Post('tickets/:id/reply')
   async reply(
     @Param('id', parseUUIDWithMessage('Invalid ticket ID format'))
     id: string,
@@ -82,7 +82,7 @@ export class TicketController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @Post(':id/resolve')
+  @Post('tickets/:id/resolve')
   async resolve(
     @Param('id', parseUUIDWithMessage('Invalid ticket ID format'))
     id: string,

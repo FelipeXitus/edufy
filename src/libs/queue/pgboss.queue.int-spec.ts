@@ -1,8 +1,7 @@
-import * as assert from 'node:assert';
+import assert from 'node:assert';
 
 import { ConfigModule } from '@nestjs/config';
 import { Test, type TestingModule } from '@nestjs/testing';
-import type PgBoss from 'pg-boss';
 import { QueueModule } from './queue.module';
 
 import { PG_BOSS_INSTANCE } from './providers';
@@ -13,6 +12,7 @@ import databaseConfig, {
   DatabaseConfig,
 } from '../configuration/database.config';
 import { ConfigurationModule } from '../configuration/configuration.module';
+import { PgBoss } from 'pg-boss';
 
 describe('PgBossQueue', () => {
   let testingModule: TestingModule;
@@ -44,11 +44,11 @@ describe('PgBossQueue', () => {
   });
 
   beforeEach(async () => {
-    await pgBoss.purgeQueue('audio');
+    await pgBoss.getQueue('audio');
   });
 
   afterAll(async () => {
-    await pgBoss.clearStorage();
+    await pgBoss.deleteAllJobs();
     await pgBoss.deleteQueue('audio');
     await testingModule.close();
   });

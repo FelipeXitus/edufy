@@ -25,7 +25,7 @@
     "test:e2e": "dotenvx run -f .env.test -- node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./test/jest-e2e.json --runInBand",
     "prepare": "husky || true",
     "kysely": "dotenvx run -- kysely",
-    "migrate": "npm run kysely -- migrate:latest",
+    "migrate": "npm run kysely -- migrate:latest -e test",
     "postmigrate": "npm run codegen",
     "codegen": "kysely-codegen --camel-case --out-file ./src/libs/database/generated/db.ts"
   },

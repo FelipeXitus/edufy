@@ -1,7 +1,7 @@
 import { type INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { WebhookHMACBuilder } from '@src/libs/webhook/webhook-hmac.builder';
-import * as request from 'supertest';
+import request from 'supertest';
 import {
   HMAC_HEADER,
   SECRET_KEY,

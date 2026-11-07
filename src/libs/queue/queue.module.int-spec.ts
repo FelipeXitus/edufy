@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, type TestingModule } from '@nestjs/testing';
 
-import * as PgBoss from 'pg-boss';
+import { PgBoss } from 'pg-boss';
+import type { Job, WipData } from 'pg-boss';
 
 import { QueueModule } from './queue.module';
 
@@ -36,7 +37,7 @@ describe('Queue Module', () => {
 
   @Injectable()
   class JobService {
-    public getJobData(job: PgBoss.Job) {
+    public getJobData(job: Job) {
       return job.data;
     }
   }
@@ -46,7 +47,7 @@ describe('Queue Module', () => {
     constructor(private readonly jobService: JobService) {
       super();
     }
-    process(job: PgBoss.Job) {
+    process(job: Job) {
       return Promise.resolve(this.jobService.getJobData(job));
     }
   }
@@ -56,7 +57,7 @@ describe('Queue Module', () => {
     public workerNames: string[] = [];
 
     @OnQueueEvent('wip')
-    onWip(workers: PgBoss.Worker[]) {
+    onWip(workers: WipData[]) {
       this.workerNames = workers.map((worker) => worker.name);
     }
   }
@@ -85,11 +86,11 @@ describe('Queue Module', () => {
   });
 
   beforeEach(async () => {
-    await pgBoss.clearStorage();
+    await pgBoss.deleteAllJobs();
   });
 
   afterAll(async () => {
-    await pgBoss.clearStorage();
+    await pgBoss.deleteAllJobs();
     await pgBoss.deleteQueue('test-queue');
     await testingModule.close();
   });
