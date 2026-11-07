@@ -2,6 +2,9 @@ import { TicketEntity } from '../domain/ticket.entity';
 import { ITicketRepository } from '../domain/ticket.repository';
 
 export class InMemoryTicketRepository implements ITicketRepository {
+  async findAllResolvedByUser(userId: string): Promise<TicketEntity[]> {
+    throw new Error('Method not implemented.');
+  }
   findAllCreatedByUser(userId: string): Promise<TicketEntity[]> {
     return Promise.resolve(
       Array.from(this.tickets.values()).filter(
