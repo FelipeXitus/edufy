@@ -6,12 +6,11 @@ import { KyselyUserRepository } from './infrastructure/kysely.user.repository';
 import { UserRepository } from './domain/user.repository';
 import { JwtGuard } from './presentation/jwt.guard';
 import { UserController } from './presentation/user.controller';
-import { TicketModule } from '../ticket/ticket.module';
 import { CourseModule } from '../course/course.module';
 import { UserWebhook } from './presentation/user.webhook';
 
 @Module({
-  imports: [ConfiguredJwtModule, TicketModule, CourseModule],
+  imports: [ConfiguredJwtModule, CourseModule],
   controllers: [UserController, UserWebhook],
   providers: [
     {
