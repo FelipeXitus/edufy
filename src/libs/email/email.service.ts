@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EmailAddress } from './email-address';
 
 export interface SendEmailInput {
-  to: string;
+  to: EmailAddress;
   subject: string;
   body: string;
 }
@@ -12,7 +13,7 @@ export class EmailService {
 
   async send(input: SendEmailInput): Promise<void> {
     this.logger.debug(
-      `Enviando email para ${input.to} com assunto: ${input.subject}`,
+      `Enviando email para ${input.to.toString()} com assunto: ${input.subject}`,
     );
   }
 }

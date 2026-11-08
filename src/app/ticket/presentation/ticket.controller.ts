@@ -28,6 +28,7 @@ import {
   IUserRepository,
   UserRepository,
 } from '@src/app/user/domain/user.repository';
+import { EmailAddress } from '@src/libs/email/email-address';
 
 @Controller('')
 export class TicketController {
@@ -122,9 +123,9 @@ export class TicketController {
   }
 
   private async sendTicketResolvedEmail(to: UserEntity, ticket: TicketEntity) {
-    const email = to.email;
+    const emailAddress = new EmailAddress(to.email);
     await this.emailService.send({
-      to: email,
+      to: emailAddress,
       subject: `Ticket Resolvido: ${ticket.title}`,
       body: `O ticket "${ticket.title}" foi resolvido com sucesso por ${ticket.resolvedBy}.`,
     });
