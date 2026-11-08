@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Body,
   Controller,
-  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -14,30 +13,19 @@ import {
 import { UserEntity } from '@src/app/user/domain/user.entity';
 import { CurrentUser } from '@src/app/user/presentation/current-user.decorator';
 import { parseUUIDWithMessage } from '@src/libs/validation/parse-uuid-with-message.pipe';
-import { TicketEntity } from '../domain/ticket.entity';
 import {
   ITicketRepository,
   TicketRepository,
 } from '../domain/ticket.repository';
 import { TicketStatus } from '../domain/ticket.status';
-import { CreateTicketDto } from './dto/create-ticket.dto';
 import { ReplyTicketDto } from './dto/reply-ticket.dto';
 import { TicketReadDto } from './dto/ticket.read-dto';
-import { EmailService } from '@src/libs/email/email.service';
-import {
-  IUserRepository,
-  UserRepository,
-} from '@src/app/user/domain/user.repository';
-import { EmailAddress } from '@src/libs/email/email-address';
 
 @Controller('')
 export class TicketController {
   constructor(
     @Inject(TicketRepository)
     private readonly ticketRepository: ITicketRepository,
-    private readonly emailService: EmailService,
-    @Inject(UserRepository)
-    private readonly userRepository: IUserRepository,
   ) {}
 
   @Get('tickets/:id')
@@ -50,20 +38,6 @@ export class TicketController {
       throw new NotFoundException(`Ticket with ID ${id} not found`);
     }
     return new TicketReadDto(ticket);
-  }
-
-  @Post('tickets')
-  async create(
-    @Body() ticket: CreateTicketDto,
-    @CurrentUser() user: UserEntity,
-  ) {
-    const newTicket = TicketEntity.create({
-      title: ticket.title,
-      description: ticket.description,
-      createdBy: user.id,
-    });
-    await this.ticketRepository.save(newTicket);
-    return new TicketReadDto(newTicket);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -88,47 +62,6 @@ export class TicketController {
       createdBy: user.id,
     });
     await this.ticketRepository.save(ticket);
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Post('tickets/:id/resolve')
-  async resolve(
-    @Param('id', parseUUIDWithMessage('Invalid ticket ID format'))
-    id: string,
-    @CurrentUser() user: UserEntity,
-  ) {
-    if (user.role !== 'support_agent') {
-      throw new ForbiddenException(
-        'You do not have permission to resolve this ticket',
-      );
-    }
-    const ticket = await this.ticketRepository.findOneById(id);
-    if (!ticket) {
-      throw new NotFoundException(`Ticket with ID ${id} not found`);
-    }
-    if (ticket.status !== 'open') {
-      throw new BadRequestException(
-        `Ticket with ID ${id} is not open and cannot be resolved`,
-      );
-    }
-    ticket.status = 'closed';
-    ticket.resolvedBy = user.id;
-    await this.ticketRepository.save(ticket);
-    const creator = await this.userRepository.findOneById(ticket.createdBy);
-    if (!creator) {
-      throw new NotFoundException(`Creator of ticket with ID ${id} not found`);
-    }
-    await this.sendTicketResolvedEmail(creator, ticket);
-    return new TicketReadDto(ticket);
-  }
-
-  private async sendTicketResolvedEmail(to: UserEntity, ticket: TicketEntity) {
-    const emailAddress = new EmailAddress(to.email);
-    await this.emailService.send({
-      to: emailAddress,
-      subject: `Ticket Resolvido: ${ticket.title}`,
-      body: `O ticket "${ticket.title}" foi resolvido com sucesso por ${ticket.resolvedBy}.`,
-    });
   }
 
   @Get('users/me/tickets')

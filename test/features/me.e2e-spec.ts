@@ -64,9 +64,9 @@ describe('Me (e2e)', () => {
       const jwtAccessTokenUser =
         await workflows(dsl).createUserWithRole('student');
 
-      const ticketOpenedByUser = await dsl.tickets
+      const ticketOpenedByUser = await dsl.support
         .authenticatedAs(jwtAccessTokenUser)
-        .create({
+        .createTicket({
           title: 'Test Ticket',
           description: 'This is a test ticket',
         })
@@ -76,9 +76,9 @@ describe('Me (e2e)', () => {
       const jwtAccessTokenAgent =
         await workflows(dsl).createUserWithRole('support_agent');
 
-      await dsl.tickets
+      await dsl.support
         .authenticatedAs(jwtAccessTokenAgent)
-        .resolve(ticketOpenedByUser)
+        .resolveTicket(ticketOpenedByUser)
         .expect(200);
 
       await dsl.users
