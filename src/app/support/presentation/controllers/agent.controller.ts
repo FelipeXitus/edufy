@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  Body,
   Controller,
   ForbiddenException,
   HttpCode,
@@ -10,12 +9,12 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { TicketEntity } from '@src/app/ticket/domain/ticket.entity';
+import { TicketEntity } from '../../domain/ticket.entity';
 import {
   TicketRepository,
   ITicketRepository,
-} from '@src/app/ticket/domain/ticket.repository';
-import { TicketReadDto } from '@src/app/ticket/presentation/dto/ticket.read-dto';
+} from '../../domain/ticket.repository';
+import { TicketReadDto } from '../../presentation/dto/ticket.read-dto';
 import { UserEntity } from '@src/app/user/domain/user.entity';
 import { CurrentUser } from '@src/app/user/presentation/current-user.decorator';
 import { EmailAddress } from '@src/libs/email/email-address';
@@ -27,9 +26,6 @@ import {
   ClientRepository,
   IClientRepository,
 } from '../../domain/client.repository';
-import { TicketStatus } from '@src/app/ticket/domain/ticket.status';
-import { ReplyTicketDto } from '../dto/reply-ticket.dto';
-import { CurrentAgent } from '../current-agent.decorator';
 
 @Controller('support/agent')
 export class AgentController {
@@ -86,29 +82,5 @@ export class AgentController {
       subject: `Ticket Resolvido: ${ticket.title}`,
       body: `O ticket "${ticket.title}" foi resolvido com sucesso por ${ticket.resolvedBy}.`,
     });
-  }
-
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Post('tickets/:id/reply')
-  async reply(
-    @Param('id', parseUUIDWithMessage('Invalid ticket ID format'))
-    id: string,
-    @Body() replyData: ReplyTicketDto,
-    @CurrentAgent() agent: AgentEntity,
-  ) {
-    const ticket = await this.ticketRepository.findOneById(id);
-    if (!ticket) {
-      throw new NotFoundException(`Ticket with ID ${id} not found`);
-    }
-    if (ticket.status !== TicketStatus.Open) {
-      throw new BadRequestException(
-        `Ticket with ID ${id} is not open and cannot be replied to`,
-      );
-    }
-    ticket.replies.push({
-      content: replyData.content,
-      createdBy: agent.id,
-    });
-    await this.ticketRepository.save(ticket);
   }
 }

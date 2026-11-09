@@ -37,7 +37,7 @@ import { instanceToPlain } from 'class-transformer';
 import {
   ITicketRepository,
   TicketRepository,
-} from '@src/app/ticket/domain/ticket.repository';
+} from '@src/app/support/domain/ticket.repository';
 
 @Controller('users')
 export class UserController {

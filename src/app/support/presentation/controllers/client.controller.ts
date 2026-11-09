@@ -2,7 +2,7 @@ import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
 import {
   TicketRepository,
   ITicketRepository,
-} from '@src/app/ticket/domain/ticket.repository';
+} from '../../domain/ticket.repository';
 import { CreateTicketDto } from '../dto/create-ticket.dto';
 import { TicketReadDto } from '../dto/ticket.read-dto';
 import { ClientEntity } from '../../domain/client.entity';

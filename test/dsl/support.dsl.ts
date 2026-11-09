@@ -1,6 +1,9 @@
 import { AbstractDSL } from './abstract.dsl';
 
 export class SupportDSL extends AbstractDSL {
+  getTicketById(ticketId: string) {
+    return this.req().get(`/support/tickets/${ticketId}`).set(this.headers);
+  }
   createTicket(data: { title: string; description: string }) {
     return this.req()
       .post('/support/client/tickets')
@@ -14,7 +17,7 @@ export class SupportDSL extends AbstractDSL {
   }
   replyTicket(ticketId: string, data: { content: string }) {
     return this.req()
-      .post(`/support/agent/tickets/${ticketId}/reply`)
+      .post(`/support/tickets/${ticketId}/reply`)
       .set(this.headers)
       .send(data);
   }

@@ -1,5 +1,5 @@
-import { TicketEntity } from '@src/app/ticket/domain/ticket.entity';
-import { TicketStatusEnum } from '@src/app/ticket/domain/ticket.status';
+import { TicketEntity } from '@src/app/support/domain/ticket.entity';
+import { TicketStatusEnum } from '@src/app/support/domain/ticket.status';
 
 export class TicketReadDto {
   readonly id: string;
