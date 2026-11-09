@@ -12,4 +12,10 @@ export class SupportDSL extends AbstractDSL {
       .post(`/support/agent/tickets/${ticketId}/resolve`)
       .set(this.headers);
   }
+  replyTicket(ticketId: string, data: { content: string }) {
+    return this.req()
+      .post(`/support/agent/tickets/${ticketId}/reply`)
+      .set(this.headers)
+      .send(data);
+  }
 }

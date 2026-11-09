@@ -36,9 +36,9 @@ describe('Reply Ticket E2E Tests', () => {
         .then((response) => response.body);
 
       // Act
-      await dsl.tickets
+      await dsl.support
         .authenticatedAs(jwtAccessToken)
-        .reply(ticket.id, {
+        .replyTicket(ticket.id, {
           content: 'This is a reply to the ticket',
         })
         .expect(204);
@@ -65,22 +65,22 @@ describe('Reply Ticket E2E Tests', () => {
   });
   describe('error cases', () => {
     test('returns an error when request is not authenticated', () => {
-      return dsl.tickets
-        .reply(randomUUID(), DUMMY_TICKET_REPLY)
+      return dsl.support
+        .replyTicket(randomUUID(), DUMMY_TICKET_REPLY)
         .expect(401)
         .expect(response.unauthorized());
     });
     test('returns an error when ticket ID is invalid', () => {
-      return dsl.tickets
+      return dsl.support
         .authenticatedAs(jwtAccessToken)
-        .reply('invalid-id', DUMMY_TICKET_REPLY)
+        .replyTicket('invalid-id', DUMMY_TICKET_REPLY)
         .expect(400)
         .expect(response.badRequest('Invalid ticket ID format'));
     });
     test('returns an error when data is invalid', () => {
-      return dsl.tickets
+      return dsl.support
         .authenticatedAs(jwtAccessToken)
-        .reply(randomUUID(), {
+        .replyTicket(randomUUID(), {
           content: '',
         })
         .expect(400)
@@ -88,9 +88,9 @@ describe('Reply Ticket E2E Tests', () => {
     });
     test('returns an error when ticket does not exist', () => {
       const nonExistentTicketId = randomUUID();
-      return dsl.tickets
+      return dsl.support
         .authenticatedAs(jwtAccessToken)
-        .reply(nonExistentTicketId, DUMMY_TICKET_REPLY)
+        .replyTicket(nonExistentTicketId, DUMMY_TICKET_REPLY)
         .expect(404)
         .expect(
           response.notFound(`Ticket with ID ${nonExistentTicketId} not found`),
@@ -113,9 +113,9 @@ describe('Reply Ticket E2E Tests', () => {
         .resolveTicket(ticket.id)
         .expect(200);
 
-      return dsl.tickets
+      return dsl.support
         .authenticatedAs(jwtAccessToken)
-        .reply(ticket.id, DUMMY_TICKET_REPLY)
+        .replyTicket(ticket.id, DUMMY_TICKET_REPLY)
         .expect(400)
         .expect(
           response.badRequest(

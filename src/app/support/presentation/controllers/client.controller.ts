@@ -1,10 +1,10 @@
-import { Body, Controller, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
 import {
   TicketRepository,
   ITicketRepository,
 } from '@src/app/ticket/domain/ticket.repository';
-import { CreateTicketDto } from '@src/app/support/presentation/dtos/create-ticket.dto';
-import { TicketReadDto } from '@src/app/ticket/presentation/dto/ticket.read-dto';
+import { CreateTicketDto } from '../dto/create-ticket.dto';
+import { TicketReadDto } from '../dto/ticket.read-dto';
 import { ClientEntity } from '../../domain/client.entity';
 import { CurrentClient } from '../current-client.decorator';
 
@@ -26,5 +26,13 @@ export class ClientController {
     });
     await this.ticketRepository.save(newTicket);
     return new TicketReadDto(newTicket);
+  }
+
+  @Get('users/me/tickets')
+  async getMyTickets(@CurrentClient() client: ClientEntity) {
+    const userTickets = await this.ticketRepository.findAllCreatedByUser(
+      client.id,
+    );
+    return userTickets.map((ticket) => new TicketReadDto(ticket));
   }
 }
