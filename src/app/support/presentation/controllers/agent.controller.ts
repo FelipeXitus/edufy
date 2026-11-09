@@ -16,22 +16,24 @@ import {
 } from '@src/app/ticket/domain/ticket.repository';
 import { TicketReadDto } from '@src/app/ticket/presentation/dto/ticket.read-dto';
 import { UserEntity } from '@src/app/user/domain/user.entity';
-import {
-  UserRepository,
-  IUserRepository,
-} from '@src/app/user/domain/user.repository';
 import { CurrentUser } from '@src/app/user/presentation/current-user.decorator';
 import { EmailAddress } from '@src/libs/email/email-address';
 import { EmailService } from '@src/libs/email/email.service';
 import { parseUUIDWithMessage } from '@src/libs/validation/parse-uuid-with-message.pipe';
+import { AgentEntity } from '../../domain/agent.entity';
+import { ClientEntity } from '../../domain/client.entity';
+import {
+  ClientRepository,
+  IClientRepository,
+} from '../../domain/client.repository';
 
 @Controller('support/agent')
 export class AgentController {
   constructor(
     @Inject(TicketRepository)
     private readonly ticketRepository: ITicketRepository,
-    @Inject(UserRepository)
-    private readonly userRepository: IUserRepository,
+    @Inject(ClientRepository)
+    private readonly clientRepository: IClientRepository,
     private readonly emailService: EmailService,
   ) {}
 
@@ -51,23 +53,29 @@ export class AgentController {
     if (!ticket) {
       throw new NotFoundException(`Ticket with ID ${id} not found`);
     }
-    if (ticket.status !== 'open') {
-      throw new BadRequestException(
-        `Ticket with ID ${id} is not open and cannot be resolved`,
-      );
+    const agent = AgentEntity.fromProps(user);
+    try {
+      agent.resolve(ticket);
+    } catch (error) {
+      if (error instanceof Error && error.cause === 'INVALID_TICKET_STATUS') {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
     }
-    ticket.status = 'closed';
-    ticket.resolvedBy = user.id;
+
     await this.ticketRepository.save(ticket);
-    const creator = await this.userRepository.findOneById(ticket.createdBy);
-    if (!creator) {
+    const client = await this.clientRepository.findOneById(ticket.createdBy);
+    if (!client) {
       throw new NotFoundException(`Creator of ticket with ID ${id} not found`);
     }
-    await this.sendTicketResolvedEmail(creator, ticket);
+    await this.sendTicketResolvedEmail(client, ticket);
     return new TicketReadDto(ticket);
   }
 
-  private async sendTicketResolvedEmail(to: UserEntity, ticket: TicketEntity) {
+  private async sendTicketResolvedEmail(
+    to: ClientEntity,
+    ticket: TicketEntity,
+  ) {
     const emailAddress = new EmailAddress(to.email);
     await this.emailService.send({
       to: emailAddress,
