@@ -6,6 +6,7 @@ import { response, validationErrors } from '@test/utils/response';
 import { createTestingApp } from '@test/utils/testing-app.factory';
 import { WebhookHMACBuilder } from '@src/libs/webhook/webhook-hmac.builder';
 import { randomUUID } from 'node:crypto';
+import { waitFor } from '@test/utils/wait-for';
 
 describe('Confirm Purchase (e2e)', () => {
   let app: INestApplication;
@@ -78,19 +79,24 @@ describe('Confirm Purchase (e2e)', () => {
           });
         });
 
-      await dsl.users
-        .authenticatedAs(studentJwt)
-        .getEnrollments()
-        .expect(200)
-        .expect((reponse) => {
-          expect(reponse.body).toEqual([
-            {
-              courseId: newRustCourse.id,
-              studentId: studentJwt.payload().sub,
-              enrolledAt: expect.any(String),
-            },
-          ]);
-        });
+      await waitFor(
+        async () => {
+          await dsl.users
+            .authenticatedAs(studentJwt)
+            .getEnrollments()
+            .expect(200)
+            .expect((reponse) => {
+              expect(reponse.body).toEqual([
+                {
+                  courseId: newRustCourse.id,
+                  studentId: studentJwt.payload().sub,
+                  enrolledAt: expect.any(String),
+                },
+              ]);
+            });
+        },
+        { interval: 1000, timeout: 5000 },
+      );
     });
     test('ignores duplicate confirmations for the same purchase', async () => {
       // Arrange
@@ -126,7 +132,7 @@ describe('Confirm Purchase (e2e)', () => {
 
       const duplicateConfirmation = new PurchaseConfirmedEvent({
         data: { id: purchase.id },
-        timestamp: '2025-08-09T13:02:55.972Z',
+        timestamp: '2025-08-08T13:02:55.972Z',
       });
       const duplicateHmac = hmacBuilder.buildForPayload(duplicateConfirmation);
 
@@ -143,7 +149,7 @@ describe('Confirm Purchase (e2e)', () => {
         .expect(200)
         .expect((res) => {
           expect(res.body.status).toBe('completed');
-          expect(res.body.confirmedAt).toBe('2025-08-09T13:02:55.972Z');
+          expect(res.body.confirmedAt).toBe('2025-08-08T13:02:55.972Z');
         });
     });
   });

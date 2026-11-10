@@ -11,6 +11,7 @@ import { PaymentGatewaySpy } from './payment.gateway.spy';
 import { PurchaseService } from './purchase.service';
 import { DatabaseModule } from '@src/libs/database/database.module';
 import { ConfigurationModule } from '@src/libs/configuration/configuration.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 describe('PurchaseService', () => {
   let testingModule: TestingModule;
@@ -18,7 +19,12 @@ describe('PurchaseService', () => {
 
   beforeEach(async () => {
     testingModule = await Test.createTestingModule({
-      imports: [DatabaseModule, ConfigurationModule, CourseModule],
+      imports: [
+        DatabaseModule,
+        ConfigurationModule,
+        CourseModule,
+        EventEmitterModule.forRoot(),
+      ],
     })
       .overrideProvider(PurchaseRepository)
       .useClass(InMemoryPurchaseRepository)

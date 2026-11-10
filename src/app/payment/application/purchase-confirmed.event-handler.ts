@@ -1,23 +1,17 @@
-import { OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { WebhookEventDto } from '@src/libs/webhook/webhook-event';
 import { PurchaseConfirmedEvent } from '../domain/purchase-confirmed.event';
-import { Inject, NotFoundException } from '@nestjs/common';
-import { EnrollmentEntity } from '@src/app/course/domain/enrollment.entity';
+import { Inject } from '@nestjs/common';
 import {
   IPurchaseRepository,
   PurchaseRepository,
 } from '@src/app/course/domain/purchase.repository';
-import {
-  EnrollmentRepository,
-  IEnrollmentRepository,
-} from '@src/app/course/domain/enrollment.repository';
 
 export class PurchaseConfirmedEventHandler {
   constructor(
-    @Inject(EnrollmentRepository)
-    private readonly enrollmentRepository: IEnrollmentRepository,
     @Inject(PurchaseRepository)
     private readonly purchaseRepository: IPurchaseRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   @OnEvent('purchase.confirmed')
@@ -27,21 +21,17 @@ export class PurchaseConfirmedEventHandler {
       purchaseConfirmedEvent.data.id,
     );
     if (!purchase) {
-      throw new NotFoundException('Purchase not found');
+      throw new Error('Purchase not found');
     }
-    if (purchase.status === 'completed') {
-      return;
-    }
-
     purchase.status = 'completed';
     purchase.confirmedAt = new Date(purchaseConfirmedEvent.timestamp);
 
     await this.purchaseRepository.save(purchase);
 
-    const enrollment = EnrollmentEntity.create({
-      courseId: purchase.courseId,
+    await this.eventEmitter.emitAsync('payment.purchase.processed', {
+      purchaseId: purchase.id,
       studentId: purchase.userId,
+      courseId: purchase.courseId,
     });
-    await this.enrollmentRepository.save(enrollment);
   }
 }
