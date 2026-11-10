@@ -12,7 +12,7 @@ import {
 } from '@src/app/course/domain/purchase.repository';
 import { Webhook } from '@src/libs/webhook/webhook.decorator';
 import { PurchaseConfirmedEvent } from '../domain/purchase-confirmed.event';
-import { PaymentEventDto } from './dto/payment-event.dto';
+import { WebhookEventDto } from '../../../libs/webhook/webhook-event';
 import {
   EnrollmentRepository,
   IEnrollmentRepository,
@@ -30,7 +30,7 @@ export class PaymentWebhook {
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('')
-  async handlePaymentWebhook(@Body() event: PaymentEventDto) {
+  async handlePaymentWebhook(@Body() event: WebhookEventDto) {
     if (event.type === 'purchase.confirmed') {
       const purchaseConfirmedEvent = new PurchaseConfirmedEvent(event);
       const purchase = await this.purchaseRepository.findById(

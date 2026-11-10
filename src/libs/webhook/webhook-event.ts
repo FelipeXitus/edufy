@@ -5,7 +5,7 @@ import {
   IsString,
 } from 'class-validator';
 
-export class PaymentEventDto {
+export class WebhookEventDto {
   @IsString()
   @IsNotEmpty()
   type: string;
