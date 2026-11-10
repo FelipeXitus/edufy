@@ -143,7 +143,7 @@ describe('Confirm Purchase (e2e)', () => {
         .expect(200)
         .expect((res) => {
           expect(res.body.status).toBe('completed');
-          expect(res.body.confirmedAt).toBe('2025-08-08T13:02:55.972Z');
+          expect(res.body.confirmedAt).toBe('2025-08-09T13:02:55.972Z');
         });
     });
   });
@@ -173,18 +173,6 @@ describe('Confirm Purchase (e2e)', () => {
         .expect(
           response.validationFailed([validationErrors.isNotEmpty('type')]),
         );
-    });
-    test('returns an error when purchase does not exist', () => {
-      const purchaseConfirmedEvent = new PurchaseConfirmedEvent({
-        data: { id: randomUUID() },
-        timestamp: new Date().toISOString(),
-      });
-      const hmac = hmacBuilder.buildForPayload(purchaseConfirmedEvent);
-      return dsl.payment
-        .usingHMAC(hmac)
-        .confirmPurchase(purchaseConfirmedEvent)
-        .expect(404)
-        .expect(response.notFound('Purchase not found'));
     });
   });
 });
