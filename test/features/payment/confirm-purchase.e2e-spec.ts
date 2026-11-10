@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { PurchaseConfirmedEvent } from '@src/app/payment/domain/purchase-confirmed.event';
 import { createDSL, DSL } from '@test/dsl/dsl.factory';
 import { workflows } from '@test/dsl/workflows';
-import { response } from '@test/utils/response';
+import { response, validationErrors } from '@test/utils/response';
 import { createTestingApp } from '@test/utils/testing-app.factory';
 import { WebhookHMACBuilder } from '@src/libs/webhook/webhook-hmac.builder';
 import { randomUUID } from 'node:crypto';
@@ -77,8 +77,75 @@ describe('Confirm Purchase (e2e)', () => {
             status: 'completed',
           });
         });
+
+      await dsl.users
+        .authenticatedAs(studentJwt)
+        .getEnrollments()
+        .expect(200)
+        .expect((reponse) => {
+          expect(reponse.body).toEqual([
+            {
+              courseId: newRustCourse.id,
+              studentId: studentJwt.payload().sub,
+              enrolledAt: expect.any(String),
+            },
+          ]);
+        });
     });
-    test.todo('ignores duplicate confirmations for the same purchase');
+    test('ignores duplicate confirmations for the same purchase', async () => {
+      // Arrange
+      const instructorJwt =
+        await workflows(dsl).createUserWithRole('instructor');
+      const course = await dsl.courses
+        .authenticatedAs(instructorJwt)
+        .create({
+          description: 'Rust Course',
+          title: 'Learn Rust',
+          price: 500,
+        })
+        .expect(201)
+        .then((res) => res.body);
+
+      const studentJwt = await workflows(dsl).createUserWithRole('student');
+      const purchase = await dsl.courses
+        .authenticatedAs(studentJwt)
+        .checkout(course.id)
+        .expect(200)
+        .then((res) => res.body);
+
+      const firstConfirmation = new PurchaseConfirmedEvent({
+        data: { id: purchase.id },
+        timestamp: '2025-08-08T13:02:55.972Z',
+      });
+      const firstHmac = hmacBuilder.buildForPayload(firstConfirmation);
+
+      await dsl.payment
+        .usingHMAC(firstHmac)
+        .confirmPurchase(firstConfirmation)
+        .expect(204);
+
+      const duplicateConfirmation = new PurchaseConfirmedEvent({
+        data: { id: purchase.id },
+        timestamp: '2025-08-09T13:02:55.972Z',
+      });
+      const duplicateHmac = hmacBuilder.buildForPayload(duplicateConfirmation);
+
+      // Act
+      await dsl.payment
+        .usingHMAC(duplicateHmac)
+        .confirmPurchase(duplicateConfirmation)
+        .expect(204);
+
+      // Assert
+      await dsl.courses
+        .authenticatedAs(studentJwt)
+        .getPurchaseById(purchase.id)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.status).toBe('completed');
+          expect(res.body.confirmedAt).toBe('2025-08-08T13:02:55.972Z');
+        });
+    });
   });
   describe('error cases', () => {
     test('returns an error when request is unauthenticated', () => {
@@ -93,9 +160,9 @@ describe('Confirm Purchase (e2e)', () => {
     });
     test('returns an error when request data is invalid', () => {
       const purchaseConfirmedEvent: PurchaseConfirmedEvent = {
-        data: { id: 'not-really-a-valid-uuid' },
+        data: { id: randomUUID() },
         timestamp: new Date().toISOString(),
-        type: 'purchase.confirmed',
+        type: '' as 'purchase.confirmed',
       } as const;
 
       const hmac = hmacBuilder.buildForPayload(purchaseConfirmedEvent);
@@ -103,7 +170,9 @@ describe('Confirm Purchase (e2e)', () => {
         .usingHMAC(hmac)
         .confirmPurchase(purchaseConfirmedEvent)
         .expect(400)
-        .expect(response.validationFailed(['Invalid UUID']));
+        .expect(
+          response.validationFailed([validationErrors.isNotEmpty('type')]),
+        );
     });
     test('returns an error when purchase does not exist', () => {
       const purchaseConfirmedEvent = new PurchaseConfirmedEvent({

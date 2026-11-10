@@ -39,6 +39,10 @@ export class PaymentWebhook {
       if (!purchase) {
         throw new NotFoundException('Purchase not found');
       }
+      if (purchase.status === 'completed') {
+        return;
+      }
+
       purchase.status = 'completed';
       purchase.confirmedAt = new Date(purchaseConfirmedEvent.timestamp);
 

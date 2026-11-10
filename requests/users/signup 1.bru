@@ -1,0 +1,25 @@
+meta {
+  name: signup
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/Users
+  body: json
+  auth: inherit
+}
+
+body:json {
+    {
+      "name": "Thiago",
+      "email": "thiago@test.com",
+      "password": "password123"
+    }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  forwardAuthorizationHeader: false
+}
