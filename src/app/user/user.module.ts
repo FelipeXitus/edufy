@@ -7,12 +7,11 @@ import { UserRepository } from './domain/user.repository';
 import { JwtGuard } from './presentation/jwt.guard';
 import { UserController } from './presentation/user.controller';
 import { CourseModule } from '../course/course.module';
-import { UserWebhook } from './presentation/user.webhook';
 import { SupportModule } from '../support/support.module';
 
 @Module({
   imports: [ConfiguredJwtModule, CourseModule, SupportModule],
-  controllers: [UserController, UserWebhook],
+  controllers: [UserController],
   providers: [
     {
       provide: UserRepository,

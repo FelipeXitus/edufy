@@ -1,6 +1,6 @@
 import { Jwt } from '@src/libs/jwt/jwt';
 import { DSL } from './dsl.factory';
-import { PurchaseConfirmedEvent } from '@src/app/user/domain/purchase-confirmed.event';
+import { PurchaseConfirmedEvent } from '@src/app/payment/domain/purchase-confirmed.event';
 import { WebhookHMACBuilder } from '@src/libs/webhook/webhook-hmac.builder';
 import { UserRoleEnum } from '@src/app/user/domain/user.role';
 import { UUID } from 'node:crypto';
@@ -24,7 +24,7 @@ export const workflows = (dsl: DSL) =>
       const hmacBuilder = dsl.app.get(WebhookHMACBuilder, { strict: false });
       const hmac = hmacBuilder.buildForPayload(purchaseConfirmedEvent);
 
-      await dsl.users
+      await dsl.payment
         .usingHMAC(hmac)
         .confirmPurchase(purchaseConfirmedEvent)
         .expect(204);

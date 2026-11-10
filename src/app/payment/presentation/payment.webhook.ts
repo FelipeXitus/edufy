@@ -12,15 +12,15 @@ import {
 } from '@src/app/course/domain/purchase.repository';
 import { Webhook } from '@src/libs/webhook/webhook.decorator';
 import { PurchaseConfirmedEvent } from '../domain/purchase-confirmed.event';
-import { UserEventDto } from './dto/user-event.dto';
+import { PaymentEventDto } from './dto/payment-event.dto';
 import {
   EnrollmentRepository,
   IEnrollmentRepository,
 } from '@src/app/course/domain/enrollment.repository';
 import { EnrollmentEntity } from '@src/app/course/domain/enrollment.entity';
 
-@Webhook('/users/webhook')
-export class UserWebhook {
+@Webhook('/payments/webhook')
+export class PaymentWebhook {
   constructor(
     @Inject(PurchaseRepository)
     private readonly purchaseRepository: IPurchaseRepository,
@@ -30,7 +30,7 @@ export class UserWebhook {
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('')
-  async handleUserWebhook(@Body() event: UserEventDto) {
+  async handlePaymentWebhook(@Body() event: PaymentEventDto) {
     if (event.type === 'purchase.confirmed') {
       const purchaseConfirmedEvent = new PurchaseConfirmedEvent(event);
       const purchase = await this.purchaseRepository.findById(

@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker';
-import { PurchaseConfirmedEvent } from '@src/app/user/domain/purchase-confirmed.event';
 import { UserRoleEnum } from '@src/app/user/domain/user.role';
 import { SignupUserDto } from '@src/app/user/presentation/dto/signup-user.dto';
 import { Jwt } from '@src/libs/jwt/jwt';
@@ -69,13 +68,6 @@ export class UsersDSL extends AbstractDSL {
 
   getPurchaseHistory() {
     return this.req().get('/users/me/purchase-history').set(this.headers);
-  }
-
-  confirmPurchase(purchaseConfirmedEvent: PurchaseConfirmedEvent) {
-    return this.req()
-      .post(`/users/webhook`)
-      .set(this.headers)
-      .send(purchaseConfirmedEvent);
   }
 
   getEnrollments() {

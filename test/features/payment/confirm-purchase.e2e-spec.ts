@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { PurchaseConfirmedEvent } from '@src/app/user/domain/purchase-confirmed.event';
+import { PurchaseConfirmedEvent } from '@src/app/payment/domain/purchase-confirmed.event';
 import { createDSL, DSL } from '@test/dsl/dsl.factory';
 import { workflows } from '@test/dsl/workflows';
 import { response } from '@test/utils/response';
@@ -51,7 +51,7 @@ describe('Confirm Purchase (e2e)', () => {
       const hmac = hmacBuilder.buildForPayload(purchaseConfirmedEvent);
 
       // Act
-      await dsl.users
+      await dsl.payment
         .usingHMAC(hmac)
         .confirmPurchase(purchaseConfirmedEvent)
         .expect(204);
@@ -86,7 +86,7 @@ describe('Confirm Purchase (e2e)', () => {
         data: { id: randomUUID() },
         timestamp: new Date().toISOString(),
       });
-      return dsl.users
+      return dsl.payment
         .confirmPurchase(purchaseConfirmedEvent)
         .expect(403)
         .expect(response.forbidden('HMAC header is missing'));
@@ -99,7 +99,7 @@ describe('Confirm Purchase (e2e)', () => {
       } as const;
 
       const hmac = hmacBuilder.buildForPayload(purchaseConfirmedEvent);
-      return dsl.users
+      return dsl.payment
         .usingHMAC(hmac)
         .confirmPurchase(purchaseConfirmedEvent)
         .expect(400)
@@ -111,7 +111,7 @@ describe('Confirm Purchase (e2e)', () => {
         timestamp: new Date().toISOString(),
       });
       const hmac = hmacBuilder.buildForPayload(purchaseConfirmedEvent);
-      return dsl.users
+      return dsl.payment
         .usingHMAC(hmac)
         .confirmPurchase(purchaseConfirmedEvent)
         .expect(404)

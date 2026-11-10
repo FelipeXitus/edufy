@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { PurchaseConfirmedEvent } from '@src/app/user/domain/purchase-confirmed.event';
+import { PurchaseConfirmedEvent } from '@src/app/payment/domain/purchase-confirmed.event';
 import { Jwt } from '@src/libs/jwt/jwt';
 import { DSL, createDSL } from '@test/dsl/dsl.factory';
 import { workflows } from '@test/dsl/workflows';
@@ -97,7 +97,7 @@ describe('Checkout Course (e2e)', () => {
         timestamp: new Date().toISOString(),
       };
       const hmac = hmacBuilder.buildForPayload(purchaseConfirmedEvent);
-      await dsl.users
+      await dsl.payment
         .usingHMAC(hmac)
         .confirmPurchase(purchaseConfirmedEvent)
         .expect(204);
