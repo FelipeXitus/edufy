@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ExamplePaymentGateway } from './application/example-payment.gateway';
 import { PaymentGateway } from './application/payment.gateway';
 import { PurchaseService } from './application/purchase.service';
+import { PurchaseProcessedEventHandler } from './application/purchase-processed.event-handler';
 import { CourseRepository } from './domain/course.repository';
 import { EnrollmentRepository } from './domain/enrollment.repository';
 import { PurchaseHistoryQuery } from './domain/purchase-history.query';
@@ -12,7 +13,6 @@ import { KyselyPurchaseHistoryQuery } from './infrastructure/kysely.purchase-his
 import { KyselyPurchaseRepository } from './infrastructure/kysely.purchase-repository';
 import { CourseController } from './presentation/course.controller';
 import { PurchaseController } from './presentation/purchase.controller';
-import { PurchaseConfirmedEventHandler } from '../payment/application/purchase-confirmed.event-handler';
 
 @Module({
   controllers: [CourseController, PurchaseController],
@@ -38,7 +38,7 @@ import { PurchaseConfirmedEventHandler } from '../payment/application/purchase-c
       useClass: KyselyEnrollmentRepository,
     },
     PurchaseService,
-    PurchaseConfirmedEventHandler,
+    PurchaseProcessedEventHandler,
   ],
   exports: [
     CourseRepository,

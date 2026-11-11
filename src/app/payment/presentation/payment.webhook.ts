@@ -10,6 +10,6 @@ export class PaymentWebhook {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('')
   async handlePaymentWebhook(@Body() event: WebhookEventDto) {
-    await this.eventEmitter.emit(event.type, event);
+    await this.eventEmitter.emitAsync(event.type, event);
   }
 }

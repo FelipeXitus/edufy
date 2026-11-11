@@ -6,7 +6,6 @@ import { response, validationErrors } from '@test/utils/response';
 import { createTestingApp } from '@test/utils/testing-app.factory';
 import { WebhookHMACBuilder } from '@src/libs/webhook/webhook-hmac.builder';
 import { randomUUID } from 'node:crypto';
-import { waitFor } from '@test/utils/wait-for';
 
 describe('Confirm Purchase (e2e)', () => {
   let app: INestApplication;
@@ -79,24 +78,19 @@ describe('Confirm Purchase (e2e)', () => {
           });
         });
 
-      await waitFor(
-        async () => {
-          await dsl.users
-            .authenticatedAs(studentJwt)
-            .getEnrollments()
-            .expect(200)
-            .expect((reponse) => {
-              expect(reponse.body).toEqual([
-                {
-                  courseId: newRustCourse.id,
-                  studentId: studentJwt.payload().sub,
-                  enrolledAt: expect.any(String),
-                },
-              ]);
-            });
-        },
-        { interval: 1000, timeout: 5000 },
-      );
+      await dsl.users
+        .authenticatedAs(studentJwt)
+        .getEnrollments()
+        .expect(200)
+        .expect((reponse) => {
+          expect(reponse.body).toEqual([
+            {
+              courseId: newRustCourse.id,
+              studentId: studentJwt.payload().sub,
+              enrolledAt: expect.any(String),
+            },
+          ]);
+        });
     });
     test('ignores duplicate confirmations for the same purchase', async () => {
       // Arrange

@@ -15,16 +15,18 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
-    UserModule,
     ConfigurationModule,
-    AdminModule,
-    DatabaseModule,
-    CourseModule,
-    ValidationModule,
-    ConditionalModule.registerWhen(DebugModule, (env) => env.DEBUG === 'true'),
-    SupportModule,
-    PaymentModule,
     EventEmitterModule.forRoot({ global: true }),
+    DatabaseModule,
+
+    UserModule,
+    AdminModule,
+    CourseModule,
+    PaymentModule,
+    ValidationModule,
+    SupportModule,
+
+    ConditionalModule.registerWhen(DebugModule, (env) => env.DEBUG === 'true'),
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,11 +1,11 @@
+import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { UUID } from 'crypto';
-import { EnrollmentEntity } from '../domain/enrollment.entity';
-import { Inject } from '@nestjs/common';
+import { UUID } from 'node:crypto';
 import {
   EnrollmentRepository,
   IEnrollmentRepository,
 } from '../domain/enrollment.repository';
+import { EnrollmentEntity } from '../domain/enrollment.entity';
 
 export interface PurchaseProcessedEvent {
   purchaseId: UUID;
@@ -13,6 +13,7 @@ export interface PurchaseProcessedEvent {
   studentId: UUID;
 }
 
+@Injectable()
 export class PurchaseProcessedEventHandler {
   constructor(
     @Inject(EnrollmentRepository)
@@ -20,11 +21,12 @@ export class PurchaseProcessedEventHandler {
   ) {}
 
   @OnEvent('payment.purchase.processed')
-  async handlePurchaseProcessed(event: PurchaseProcessedEvent) {
+  async handlePurchaseProcessed(event: PurchaseProcessedEvent): Promise<void> {
     const enrollment = EnrollmentEntity.create({
       courseId: event.courseId,
       studentId: event.studentId,
     });
+
     await this.enrollmentRepository.save(enrollment);
   }
 }

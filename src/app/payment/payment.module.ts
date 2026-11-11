@@ -1,17 +1,11 @@
 import { Module } from '@nestjs/common';
-import { PaymentWebhook } from './presentation/payment.webhook';
-import { KyselyPurchaseRepository } from '../course/infrastructure/kysely.purchase-repository';
+import { CourseModule } from '../course/course.module';
 import { PurchaseConfirmedEventHandler } from './application/purchase-confirmed.event-handler';
-import { PurchaseRepository } from '../course/domain/purchase.repository';
+import { PaymentWebhook } from './presentation/payment.webhook';
 
 @Module({
-  providers: [
-    {
-      provide: PurchaseRepository,
-      useValue: KyselyPurchaseRepository,
-    },
-    PurchaseConfirmedEventHandler,
-  ],
+  imports: [CourseModule],
   controllers: [PaymentWebhook],
+  providers: [PurchaseConfirmedEventHandler],
 })
 export class PaymentModule {}
