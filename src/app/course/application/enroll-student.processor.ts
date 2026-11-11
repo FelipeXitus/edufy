@@ -1,30 +1,33 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
 import { UUID } from 'node:crypto';
 import {
   EnrollmentRepository,
   IEnrollmentRepository,
 } from '../domain/enrollment.repository';
 import { EnrollmentEntity } from '../domain/enrollment.entity';
+import { JobWorker } from '@src/libs/queue/job-worker';
+import { Job } from 'pg-boss';
+import { Processor } from '@src/libs/queue/queue.decorators';
 
-export interface PurchaseProcessedEvent {
+export interface EnrollStudentJob {
   purchaseId: UUID;
   courseId: UUID;
   studentId: UUID;
 }
-
+@Processor('enroll-student')
 @Injectable()
-export class PurchaseProcessedEventHandler {
+export class EnrollStudentProcessor extends JobWorker {
   constructor(
     @Inject(EnrollmentRepository)
     private readonly enrollmentRepository: IEnrollmentRepository,
-  ) {}
+  ) {
+    super();
+  }
 
-  @OnEvent('payment.purchase.processed')
-  async handlePurchaseProcessed(event: PurchaseProcessedEvent): Promise<void> {
+  async process(job: Job<EnrollStudentJob>): Promise<any> {
     const enrollment = EnrollmentEntity.create({
-      courseId: event.courseId,
-      studentId: event.studentId,
+      courseId: job.data.courseId,
+      studentId: job.data.studentId,
     });
 
     await this.enrollmentRepository.save(enrollment);

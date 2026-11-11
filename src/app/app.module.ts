@@ -8,10 +8,14 @@ import { AppController } from './app.controller';
 import { UserModule } from './user/user.module';
 import { AppService } from './app.service';
 import { DebugModule } from './debug/debug.module';
-import { ConditionalModule } from '@nestjs/config';
+import { ConditionalModule, ConfigModule } from '@nestjs/config';
 import { SupportModule } from './support/support.module';
 import { PaymentModule } from './payment/payment.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import databaseConfig, {
+  DatabaseConfig,
+} from '@src/libs/configuration/database.config';
+import { QueueModule } from '@src/libs/queue/queue.module';
 
 @Module({
   imports: [
@@ -27,6 +31,15 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     SupportModule,
 
     ConditionalModule.registerWhen(DebugModule, (env) => env.DEBUG === 'true'),
+    QueueModule.forRootAsync({
+      imports: [ConfigModule.forFeature(databaseConfig)],
+      inject: [databaseConfig.KEY],
+      useFactory: (config: DatabaseConfig) => {
+        return {
+          connectionString: config.url,
+        };
+      },
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
