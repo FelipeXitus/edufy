@@ -13,10 +13,11 @@ import { KyselyPurchaseHistoryQuery } from './infrastructure/kysely.purchase-his
 import { KyselyPurchaseRepository } from './infrastructure/kysely.purchase-repository';
 import { CourseController } from './presentation/course.controller';
 import { PurchaseController } from './presentation/purchase.controller';
-import { QueueModule } from '@src/libs/queue/queue.module';
+import { EnrollStudentProcessor } from './application/enroll-student.processor';
+import { EnrollStudentQueueModule } from './enroll-student-queue.module';
 
 @Module({
-  imports: [QueueModule.registerQueue('enroll-student')],
+  imports: [EnrollStudentQueueModule],
   controllers: [CourseController, PurchaseController],
   providers: [
     {
@@ -40,6 +41,7 @@ import { QueueModule } from '@src/libs/queue/queue.module';
       useClass: KyselyEnrollmentRepository,
     },
     PurchaseService,
+    EnrollStudentProcessor,
   ],
   exports: [
     CourseRepository,

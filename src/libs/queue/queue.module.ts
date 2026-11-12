@@ -87,11 +87,12 @@ export class QueueModule
   }
 
   async onModuleInit() {
+    this.setupEventListeners();
     this.logger.debug('Initializing PgBoss...');
     await this.pgBoss.start();
     await this.createQueues();
     await this.setupProcessors();
-    this.setupEventListeners();
+
     this.pgBoss.on('error', (error: Error) => {
       this.logger.error('PgBoss error:', error);
     });
