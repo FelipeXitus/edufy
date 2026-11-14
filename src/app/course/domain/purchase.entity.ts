@@ -28,6 +28,8 @@ export interface CreatePurchaseInput {
 }
 
 export class PurchaseEntity {
+  public readonly jobs: { name: string; data: Record<string, any> }[];
+
   private constructor(
     public readonly id: UUID,
     public readonly userId: UUID,
@@ -63,5 +65,18 @@ export class PurchaseEntity {
       props.currency,
       props.confirmedAt,
     );
+  }
+
+  public confirm(timestamp: string) {
+    this.status = PurchaseStatus.Completed;
+    this.confirmedAt = new Date(timestamp);
+    this.jobs.push({
+      name: 'enroll-student',
+      data: {
+        purchaseId: this.id,
+        studentId: this.userId,
+        courseId: this.courseId,
+      },
+    });
   }
 }

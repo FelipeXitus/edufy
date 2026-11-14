@@ -6,16 +6,12 @@ import {
 } from '@src/app/course/domain/purchase.repository';
 import { WebhookEventDto } from '@src/libs/webhook/webhook-event';
 import { PurchaseConfirmedEvent } from '../domain/purchase-confirmed.event';
-import { Queue } from '@src/libs/queue/queue.interface';
-import { InjectQueue } from '@src/libs/queue/queue.decorators';
 
 @Injectable()
 export class PurchaseConfirmedEventHandler {
   constructor(
     @Inject(PurchaseRepository)
     private readonly purchaseRepository: IPurchaseRepository,
-    @InjectQueue('enroll-student')
-    private readonly enrollStudentQueue: Queue,
   ) {}
 
   @OnEvent('purchase.confirmed')
@@ -30,20 +26,8 @@ export class PurchaseConfirmedEventHandler {
       throw new Error('Purchase not found');
     }
 
-    purchase.status = 'completed';
-    purchase.confirmedAt = new Date(purchaseConfirmedEvent.timestamp);
+    purchase.confirm(event.timestamp);
 
     await this.purchaseRepository.save(purchase);
-
-    console.log('Sending enroll-student job', {
-      purchaseId: purchase.id,
-      studentId: purchase.userId,
-      courseId: purchase.courseId,
-    });
-    await this.enrollStudentQueue.addJob({
-      purchaseId: purchase.id,
-      studentId: purchase.userId,
-      courseId: purchase.courseId,
-    });
   }
 }
